@@ -1,0 +1,6 @@
+@Moamen_Sowlutions_HostAddress = http://localhost:5081
+
+GET {{Moamen_Sowlutions_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
