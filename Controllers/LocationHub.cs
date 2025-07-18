@@ -9,7 +9,7 @@ namespace Moamen_Sowlutions.Controllers
     {
         public async Task SendLocation(string userId, double latitude, double longitude)
         {
-            // Broadcast to all clients (in real app, filter by allowed users)
+            // Broadcast to all clients 
             await Clients.All.SendAsync("ReceiveLocation", userId, latitude, longitude);
         }
     }

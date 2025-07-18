@@ -14,7 +14,7 @@ namespace DbContext
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // Configure relationships if needed
+            
         }
     }
 }
