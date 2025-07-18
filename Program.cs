@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Moamen_Sowlutions.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Replace AddSwaggerGen with AddCustomSwagger
+builder.Services.AddCustomSwagger();
 
 // Add DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -50,11 +52,9 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Enable Swagger UI always (not just in Development)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

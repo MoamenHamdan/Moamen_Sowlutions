@@ -118,7 +118,7 @@ namespace Moamen_Sowlutions.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLocations");
+                    b.ToTable("UserLocations", (string)null);
                 });
 
             modelBuilder.Entity("Entities.UserVisibility", b =>
@@ -143,7 +143,7 @@ namespace Moamen_Sowlutions.Migrations
 
                     b.HasIndex("OwnerUserId");
 
-                    b.ToTable("UserVisibilities");
+                    b.ToTable("UserVisibilities", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
