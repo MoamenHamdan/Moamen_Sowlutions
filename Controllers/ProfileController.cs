@@ -29,12 +29,16 @@ namespace Moamen_Sowlutions.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateProfile(ProfileDto dto)
+        public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
             user.Name = dto.Name;
+            user.Email = dto.Email;
+            user.UserName = dto.Email;
             await _userManager.UpdateAsync(user);
             return Ok();
         }
