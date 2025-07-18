@@ -13,18 +13,7 @@ namespace DbContext
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(builder);
-            builder.Entity<UserVisibility>()
-                .HasOne(uv => uv.OwnerUser)
-                .WithMany()
-                .HasForeignKey(uv => uv.OwnerUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<UserVisibility>()
-                .HasOne(uv => uv.AllowedUser)
-                .WithMany()
-                .HasForeignKey(uv => uv.AllowedUserId)
-                .OnDelete(DeleteBehavior.Restrict);
+    
         }
     }
 }
