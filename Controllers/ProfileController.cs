@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Services;
 
 namespace Moamen_Sowlutions.Controllers
 {
@@ -12,20 +13,20 @@ namespace Moamen_Sowlutions.Controllers
     [Authorize]
     public class ProfileController : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IProfileService _profileService;
 
-        public ProfileController(UserManager<ApplicationUser> userManager)
+        public ProfileController(IProfileService profileService)
         {
-            _userManager = userManager;
+            _profileService = profileService;
         }
 
         [HttpGet]
         public async Task<ActionResult<ProfileDto>> GetProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return NotFound();
-            return new ProfileDto { Id = user.Id, Email = user.Email, Name = user.Name };
+            var profile = await _profileService.GetProfileAsync(userId);
+            if (profile == null) return NotFound();
+            return profile;
         }
 
         [HttpPut]
@@ -34,12 +35,7 @@ namespace Moamen_Sowlutions.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return NotFound();
-            user.Name = dto.Name;
-            user.Email = dto.Email;
-            user.UserName = dto.Email;
-            await _userManager.UpdateAsync(user);
+            await _profileService.UpdateProfileAsync(userId, dto);
             return Ok();
         }
     }

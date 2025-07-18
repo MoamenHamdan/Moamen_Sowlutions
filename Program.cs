@@ -6,14 +6,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Moamen_Sowlutions.Extensions;
+using Repositories;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 // Replace AddSwaggerGen with AddCustomSwagger
 builder.Services.AddCustomSwagger();
 
@@ -48,6 +51,15 @@ builder.Services.AddAuthentication(options =>
 
 // Add SignalR
 builder.Services.AddSignalR();
+
+// Register repositories
+builder.Services.AddScoped<IUserLocationRepository, UserLocationRepository>();
+builder.Services.AddScoped<IUserVisibilityRepository, UserVisibilityRepository>();
+
+// Register services
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IUserVisibilityService, UserVisibilityService>();
 
 var app = builder.Build();
 

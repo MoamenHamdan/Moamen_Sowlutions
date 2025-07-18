@@ -3,8 +3,11 @@ using Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.ComponentModel;
+using Services;
 
 namespace Moamen_Sowlutions.Controllers
 {
@@ -13,59 +16,60 @@ namespace Moamen_Sowlutions.Controllers
     [Authorize]
     public class LocationController : ControllerBase
     {
-        private readonly DbContext.AppDbContext _db;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILocationService _locationService;
 
-        public LocationController(DbContext.AppDbContext db, UserManager<ApplicationUser> userManager)
+        public LocationController(ILocationService locationService)
         {
-            _db = db;
-            _userManager = userManager;
+            _locationService = locationService;
         }
 
+        /// <summary>
+        /// Send your current location (latitude, longitude) to the server.
+        /// </summary>
+        /// <param name="dto">Location data (latitude, longitude)</param>
+        /// <returns>200 OK if stored, 400 if invalid</returns>
         [HttpPost]
-        public async Task<IActionResult> PostLocation(LocationDto dto)
+        public async Task<IActionResult> PostLocation([FromBody] LocationDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
-            var location = new UserLocation
-            {
-                UserId = userId,
-                Latitude = dto.Latitude,
-                Longitude = dto.Longitude,
-                Timestamp = DateTime.UtcNow,
-                IsActive = true
-            };
-            _db.UserLocations.Add(location);
-            await _db.SaveChangesAsync();
-            return Ok();
+            await _locationService.PostLocationAsync(userId, dto);
+            return Ok(new { message = "Location stored successfully." });
         }
 
+        /// <summary>
+        /// Get the location history of a user you are allowed to see, with 20-second intervals.
+        /// </summary>
+        /// <param name="userId">The user ID whose history you want to view</param>
+        /// <returns>List of location points</returns>
         [HttpGet("history/{userId}")]
         public async Task<ActionResult<IEnumerable<LocationHistoryDto>>> GetHistory(string userId)
         {
-            var canSee = await _db.UserVisibilities.AnyAsync(v => v.OwnerUserId == userId && v.AllowedUserId == User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (!canSee && userId != User.FindFirstValue(ClaimTypes.NameIdentifier))
-                return Forbid();
-            var history = await _db.UserLocations
-                .Where(l => l.UserId == userId)
-                .OrderByDescending(l => l.Timestamp)
-                .ToListAsync();
-            // Return only one every 20 seconds
-            var filtered = history
-                .GroupBy(l => l.Timestamp.Ticks / TimeSpan.FromSeconds(20).Ticks)
-                .Select(g => g.First())
-                .OrderBy(l => l.Timestamp)
-                .Select(l => new LocationHistoryDto { Latitude = l.Latitude, Longitude = l.Longitude, Timestamp = l.Timestamp })
-                .ToList();
-            return filtered;
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            try
+            {
+                var history = await _locationService.GetHistoryAsync(currentUserId, userId);
+                return Ok(history);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
         }
 
-        [HttpPost("stop")]
+        [HttpPost("Stop Sharing")]
         public async Task<IActionResult> StopSharing()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
-            var activeLocations = _db.UserLocations.Where(l => l.UserId == userId && l.IsActive);
-            await activeLocations.ForEachAsync(l => l.IsActive = false);
-            await _db.SaveChangesAsync();
+            await _locationService.StopSharingAsync(userId);
+            return Ok();
+        }
+        [HttpPost("Start Sharing")]
+        public async Task<IActionResult> StartSharing()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
+            await _locationService.StartSharingAsync(userId);
             return Ok();
         }
     }

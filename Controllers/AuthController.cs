@@ -7,7 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Moamen_Sowlutions.Controllers
+namespace Moamen_Sowlutions.Authentication
 {
     [ApiController]
     [Route("api/[controller]")]
