@@ -20,7 +20,7 @@ namespace Moamen_Sowlutions.Controllers
             _profileService = profileService;
         }
 
-        [HttpGet]
+        [HttpGet("Check your profile")]
         public async Task<ActionResult<ProfileDto>> GetProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue(ClaimTypes.Name);
@@ -29,7 +29,7 @@ namespace Moamen_Sowlutions.Controllers
             return profile;
         }
 
-        [HttpPut]
+        [HttpPut("Update your profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] ProfileDto dto)
         {
             if (!ModelState.IsValid)
